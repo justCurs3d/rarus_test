@@ -1,0 +1,29 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: rarus
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+  api:
+    build: .
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: rarus
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+    command: sh -c "npx knex migrate:latest --knexfile knexfile.cjs && node dist/server.js"
+# switched to bind mount at ./pgdata so no named volume is needed
